@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 0.1.1 2021/11/07 不要なログが出てしまっていたのを修正
 // 0.1.0 2021/10/31 公開
 //-----------------------------------------------------------------------------
 // Twitter: @napiiey
@@ -86,7 +87,6 @@ Game_Action.prototype.evalDamageFormula = function(target) {
     //●ダメージ倍率計算式記入部分 ここまで--------------------------------
 
     if(!bypass){result=result*defaultRate;}
-    console.log("aElementRate:"+aElementRate+" aTypeRate:"+aTypeRate+" effectRate:"+effectRate+" 全与:"+a.elementRate(33)+" 全被:"+a.elementRate(23))
     return result;
 };
 
