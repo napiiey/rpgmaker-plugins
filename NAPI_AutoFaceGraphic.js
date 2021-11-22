@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.1.0 2021/11/22 プラグイン無効化スイッチの追加
 // 1.0.0 2021/11/22 公開
 //-----------------------------------------------------------------------------
 // Twitter: @napiiey
@@ -63,15 +64,13 @@
  * 
  * @param FaceGraphicList
  * @text 顔画像リスト
- * @desc 顔グラを 名前:ファイル名:標準インデックス（左上から右に0-3、左下から右に4-7）
- * の形式で指定します。改行を挟み複数入力できます。(:は半角)
+ * @desc 顔グラを 名前:ファイル名:標準インデックス（左上から右に0-3）の形で指定します。改行を挟み複数入力できます。(:は半角)
  * @default "ハロルド:Actor1:0\nテレーゼ:Actor1:7"
  * @type note
  * 
  * @param FacialExpressionKeyList
  * @text 表情キーリスト
- * @desc 表情を呼び出すキーとなる文字を設定します。行数がインデックスに対応しています。
- * （左上から右に0-3、左下から右に4-7）
+ * @desc 表情を呼び出すキーとなる文字を設定します。行数がインデックスに対応しています。（左上から右に0-3、左下から右に4-7）
  * @default "常\n喜\n怒\n哀\n楽\n苦\n攻\n驚\n"
  * @type note
  * 
@@ -80,6 +79,12 @@
  * @desc 顔画像を非表示にする為のキーとなる文字を設定します。
  * @default 無
  * @type string
+ * 
+ * @param PluginDisableSwitch
+ * @text プラグイン無効化スイッチ
+ * @desc ここで設定したスイッチがONになっている間このプラグインが無効になります。
+ * @default 0
+ * @type switch
  * 
  */
 
@@ -93,6 +98,7 @@ const pDelimiter = param['Delimiter']; //string
 const pFaceGraphicList = param['FaceGraphicList']; //note
 const pFacialExpressionKeyList = param['FacialExpressionKeyList']; //note
 const pHideFaceGraphicKey = param['HideFaceGraphicKey']; //string
+const pPluginDisableSwitch = param['PluginDisableSwitch']; //switch(number
 
 let faceList=pFaceGraphicList
 faceList=faceList.slice(1,faceList.length-1);
@@ -107,7 +113,7 @@ keyList=keyList.split(/\\n/g);
 const _Game_Interpreter=Game_Interpreter.prototype.command101;
 Game_Interpreter.prototype.command101=function() {
 	if(!$gameMessage.isBusy()){
-        if(!this._params[0]){ //顔グラがない場合
+        if(!this._params[0]&&!$gameSwitches.value(pPluginDisableSwitch)){ //顔グラがない場合＆無効化スイッチがONになってない場合
             let firstLine=this._list[this._index+1].parameters[0];
             const reg=new RegExp('([^\\n]+)'+pDelimiter);
             let faceGraphic="";
