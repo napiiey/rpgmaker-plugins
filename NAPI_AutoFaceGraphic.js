@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.1.1 2021/11/24 名前の一部が一致したキャラが一致した扱いになってしまう不具合を修正
 // 1.1.0 2021/11/22 プラグイン無効化スイッチの追加
 // 1.0.0 2021/11/22 公開
 //-----------------------------------------------------------------------------
@@ -129,12 +130,20 @@ Game_Interpreter.prototype.command101=function() {
                         name=value[0];
                         faceGraphic=value[1];
                         facialExpression=Number(value[2]);
+                        let keyMatching=false;
                         keyList.forEach((key,index)=>{
                             if(thisIndex===key){
                                 facialExpression=index;
+                                keyMatching=true;
                             }
                         });
                         if(thisIndex===pHideFaceGraphicKey){
+                            faceGraphic="";
+                            facialExpression=0;
+                            keyMatching=true;
+                        };
+                        if(thisIndex!==""&&!keyMatching){
+                            name=nameAndIndex;
                             faceGraphic="";
                             facialExpression=0;
                         };
