@@ -76,7 +76,7 @@
 (() => {
 'use strict';
 
-const param = PluginManager.parameters('NAPI_NumberAndCursorAccel');
+const param = PluginManager.parameters('NAPI_SelectableWindowAccel');
 const pStartTime=Number(param['StartTime']);
 const pDefaultSpeed=Number(param['DefaultSpeed']);
 const pAccelSpeed=Number(param['AccelSpeed']);
