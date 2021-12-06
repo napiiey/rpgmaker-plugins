@@ -1,5 +1,5 @@
 //=============================================================================
-// NAPI_AccelerateSelectableWindow.js
+// NAPI_SelectableWindowAccel.js
 //=============================================================================
 // Copyright (c) 2021 napiiey
 // Released under the MIT license
