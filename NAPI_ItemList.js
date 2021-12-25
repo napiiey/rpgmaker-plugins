@@ -6,7 +6,8 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
-// 1.0.0 2021/12/17 公開
+// 1.1.0 2021/12/25 MZでDevToolsを操作中もゲームWindowが更新されるように修正
+// 1.0.0 2021/12/24 公開
 //-----------------------------------------------------------------------------
 // Twitter: @napiiey
 //-----------------------------------------------------------------------------
@@ -24,8 +25,6 @@
  * 
  * ●使い方
  * プラグインを導入して起動すると自動で全マップを検索しリスト表示します。
- * MZの場合DevToolsが前面にあるとツクール本体が一時停止するため
- * 再度画面をクリックしてアクティブにして下さい。
  * プラグインパラメーターから表示項目の設定ができます。
  * 
  * 各リスト表示項目の ▶{} の部分をクリックし、中のコマンドをクリックすると
@@ -205,7 +204,6 @@ const pItemNameWidth = Number(param['ItemNameWidth']); //number
 const pEventNameWidth = Number(param['EventNameWidth']); //number
 const pXYWidth = Number(param['XYWidth']); //number
 const pLoadTime = Number(param['LoadTime']); //number
-
 
 const loadTime=pLoadTime*10;
 let startup=pStartUpAllSerch;
@@ -585,6 +583,9 @@ const showSortByMap=function(){
     commandList();
 };
 
+SceneManager.isGameActive=function(){
+    return true;
+};
 
 
 }})();
