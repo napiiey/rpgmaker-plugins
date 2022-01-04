@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.1.0 2022/01/04 顔画像非表示時も維持される余白設定プラグインパラメーター追加
 // 1.0.0 2021/12/26 公開
 //-----------------------------------------------------------------------------
 // Twitter: @napiiey
@@ -61,6 +62,18 @@
  * @default false
  * @type boolean
  * 
+ * @param LeftMarginEnableFace
+ * @text 文字左余白（顔画像あり）
+ * @desc 顔画像がある時の文章左の余白です。（顔画像強制非表示オプション利用時も適用されます）
+ * @default 168
+ * @type number
+ * 
+ * @param LeftMarginDisableFace
+ * @text 文字左余白（顔画像なし）
+ * @desc 顔画像がない時の文章左の余白です。（顔画像強制非表示オプション利用時も適用されます）
+ * @default 0
+ * @type number
+ * 
  */
 
 if(!window.NAPI){window.NAPI={}}
@@ -72,7 +85,10 @@ const param = PluginManager.parameters('NAPI_SwitchOnAtMessage');
 const pSwitchAtShowText = Number(param['SwitchAtShowText']); //switch(number
 const pSwitchAtCloseText = Number(param['SwitchAtCloseText']); //switch(number
 const pDisableFaceGraphic = param['DisableFaceGraphic']; //boolean(string
+const pLeftMarginEnableFace = Number(param['LeftMarginEnableFace']); //number
+const pLeftMarginDisableFace = Number(param['LeftMarginDisableFace']); //number
 
+let enableFace=false;
 
 const _Game_Interpreter=Game_Interpreter.prototype.command101;
 Game_Interpreter.prototype.command101=function(params) {
@@ -107,12 +123,18 @@ Window_Message.prototype.terminateMessage = function() {
 const _Game_Message_prototype_setFaceImage=Game_Message.prototype.setFaceImage;
 Game_Message.prototype.setFaceImage = function(faceName, faceIndex) {
     _Game_Message_prototype_setFaceImage.apply(this,arguments);
+    if(this._faceName){enableFace=true}else{enableFace=false};
     if(pDisableFaceGraphic==="true"){
         this._faceName="";
         this._faceIndex=0;
     };
 };
 
+const _Window_Message_prototype_newLineX=Window_Message.prototype.newLineX;
+Window_Message.prototype.newLineX = function() {
+    _Window_Message_prototype_newLineX.apply(this,arguments);
+    return enableFace ? pLeftMarginDisableFace : pLeftMarginEnableFace;
+};
 
 
 })();
