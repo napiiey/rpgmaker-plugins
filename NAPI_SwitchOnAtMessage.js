@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.1.1 2022/01/04 顔画像ありとなしの余白設定が逆になっていた不具合を修正。
 // 1.1.0 2022/01/04 顔画像非表示時も維持される余白設定プラグインパラメーター追加
 // 1.0.0 2021/12/26 公開
 //-----------------------------------------------------------------------------
@@ -133,7 +134,7 @@ Game_Message.prototype.setFaceImage = function(faceName, faceIndex) {
 const _Window_Message_prototype_newLineX=Window_Message.prototype.newLineX;
 Window_Message.prototype.newLineX = function() {
     _Window_Message_prototype_newLineX.apply(this,arguments);
-    return enableFace ? pLeftMarginDisableFace : pLeftMarginEnableFace;
+    return enableFace ? pLeftMarginEnableFace : pLeftMarginDisableFace;
 };
 
 
