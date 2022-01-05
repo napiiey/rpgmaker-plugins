@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.0.1 2022/01/05 メンバーIndexで指定できないバグを修正
 // 1.0.0 2022/01/04 公開
 //-----------------------------------------------------------------------------
 // Twitter: @napiiey
@@ -40,6 +41,19 @@
  * 
  * 　例2）ID2のアクターの1番上のスキルタイプを開きたい場合
  * 　指定スキルタイプメニュー アクターID:2 スキルタイプIndex:0
+ * 
+ * 
+ * ●スクリプトでの利用（上級者向け）
+ * プラグインコマンドの代わりにスクリプトとして実行する事ができます。
+ * 
+ * 利用できるプロパティ利用例
+ * NAPI.osstActorId=2; //アクターID2番
+ * NAPI.osstActorId=$gameParty.allMembers()[0].actorId() //並び順先頭のアクター
+ * NAPI.osstSkillTypeId=2; //スキルタイプID2
+ * NAPI.osstSkillTypeIndex=0; //1番上のスキルタイプIndex
+ * 
+ * 上記のいずれか2つのスクリプトでアクターとスキルタイプを指定後以下の関数を実行して下さい。
+ * NAPI.OpenSelectedSkillType()
  * 
  * 
  * ●ご利用について
@@ -100,10 +114,11 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
         const pluginArgs=rawArgs.map(e=>e.split(":"));
         pluginArgs.forEach(e=>{
             if(e[0].toLowerCase()==="actor"||e[0]==="アクターID"){NAPI.osstActorId=Number(e[1])};
-            if(e[0].toLowerCase()==="member"||e[0]==="メンバーIndex"){NAPI.osstActorId=$gameParty.allMembers()[Number(e[1])].actorId};
+            if(e[0].toLowerCase()==="member"||e[0]==="メンバーIndex"){NAPI.osstActorId=$gameParty.allMembers()[Number(e[1])].actorId()};
             if(e[0].toLowerCase()==="type"||e[0]==="スキルタイプID"){NAPI.osstSkillTypeId=Number(e[1])};
             if(e[0].toLowerCase()==="typeindex"||e[0]==="スキルタイプIndex"){NAPI.osstSkillTypeIndex=Number(e[1])};
         });
+        console.log(NAPI.osstActorId);
         NAPI.OpenSelectedSkillType();
     }
 };
