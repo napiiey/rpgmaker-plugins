@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.1.0 2022/01/05 スキルタイプメニューを隠すオプション追加
 // 1.0.1 2022/01/05 メンバーIndexで指定できないバグを修正
 // 1.0.0 2022/01/04 公開
 //-----------------------------------------------------------------------------
@@ -90,6 +91,11 @@
  * @type number
  * @default 0
  * 
+ * @param HideSkillType
+ * @text スキルタイプメニューを隠す
+ * @desc ONにするとスキルタイプ一覧を隠します。キャンセル時はスキルタイプ選択に戻らず終了します。
+ * @default false
+ * @type boolean
  */
 
 if(!window.NAPI){window.NAPI={}}
@@ -99,11 +105,13 @@ if(!window.NAPI){window.NAPI={}}
 
 const pluginName='NAPI_OpenSelectedSkillType';
 const param = PluginManager.parameters(pluginName);
+const pHideSkillType = param['HideSkillType']; //boolean(string
 
 let directOpen=false;
 NAPI.osstActorId=0;
 NAPI.osstSkillTypeId=0;
 NAPI.osstSkillTypeIndex=0;
+let skillTypeWindowWidth=0;
 
 
 const _Game_Interpreter_prototype_pluginCommand = Game_Interpreter.prototype.pluginCommand;
@@ -118,14 +126,12 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
             if(e[0].toLowerCase()==="type"||e[0]==="スキルタイプID"){NAPI.osstSkillTypeId=Number(e[1])};
             if(e[0].toLowerCase()==="typeindex"||e[0]==="スキルタイプIndex"){NAPI.osstSkillTypeIndex=Number(e[1])};
         });
-        console.log(NAPI.osstActorId);
         NAPI.OpenSelectedSkillType();
     }
 };
 
 if(Utils.RPGMAKER_NAME==="MZ"){
     PluginManager.registerCommand(pluginName,"OpenSelectedSkillType",args => {
-        console.log(args);
         NAPI.osstActorId=$gameParty.allMembers()[Number(args.memberIndex)].actorId();
         if(Number(args.actorId)){NAPI.osstActorId=Number(args.actorId)};
         NAPI.osstSkillTypeId=Number(args.skillTypeId);
@@ -153,11 +159,23 @@ Scene_Skill.prototype.start = function() {
     _Scene_Skill_prototype_start.apply(this,arguments);
     if(directOpen){
         this._skillTypeWindow.select(NAPI.osstSkillTypeIndex);
-        this._skillTypeWindow.deactivate();
+        if(pHideSkillType==="true"){
+            this._skillTypeWindow.hide();
+            const wx = 0;
+            const wy = this._helpWindow.height;
+            const ww = Graphics.boxWidth;
+            const wh = this._skillTypeWindow.height;
+            this._statusWindow.move(wx, wy, ww, wh);
+            skillTypeWindowWidth=this._skillTypeWindow.width;
+        }else{
+            this._skillTypeWindow.deactivate();
+        };
         this.commandSkill();
         directOpen=false;
     };
 };
+
+
 
 
 })();
