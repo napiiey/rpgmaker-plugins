@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.0.1 2022/01/08 通常ショップを開いた時にエラーが起きる場合がある不具合を修正
 // 1.0.0 2021/12/17 公開
 //-----------------------------------------------------------------------------
 // Twitter: @napiiey
@@ -103,7 +104,7 @@ Window_ShopBuy.prototype.isCurrentItemEnabled = function() {
 const _Window_ShopBuy_prototype_isEnabled=Window_ShopBuy.prototype.isEnabled;
 Window_ShopBuy.prototype.isEnabled = function(item,index) {
     let result=_Window_ShopBuy_prototype_isEnabled.apply(this,arguments);
-    if(NAPI.lsStockList[shopName][index]<=0){result=false};
+    if(shopName!==""&&NAPI.lsStockList[shopName][index]<=0){result=false};
     return result;
 };
 
