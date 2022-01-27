@@ -13,7 +13,7 @@
 
 /*:
  * @target MV
- * @plugindesc マップキャラクターオフセット
+ * @plugindesc マップキャラクター位置ずらしプラグイン
  * @author なぴぃ
  * 
  * @help 
