@@ -116,7 +116,6 @@
                     };
                 });
                 this.mcoOffset = { vx: vx - fx, vy: vy - fy, fx: fx, fy: fy };
-                console.log(this.mcoOffset)
             };
         };
     };
