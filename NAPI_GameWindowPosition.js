@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.0.1 2022/07/17 コンソールログの消し忘れを修正
 // 1.0.0 2022/07/03 公開
 //-----------------------------------------------------------------------------
 // Twitter: @napiiey
@@ -81,7 +82,6 @@
     let bootUpdateId = setInterval(bootUpdate, 10);
 
     const slowUpdate = function() {
-        console.log(window.outerWidth);
         if (data.width === window.outerWidth && data.height === window.outerHeight &&
             data.x === window.screenX && data.y === window.screenY) {
             return;
