@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.1.0 2022/07/17 MZに対応・その他バグを修正
 // 1.0.1 2022/01/08 通常ショップを開いた時にエラーが起きる場合がある不具合を修正
 // 1.0.0 2021/12/17 公開
 //-----------------------------------------------------------------------------
@@ -13,6 +14,7 @@
 //-----------------------------------------------------------------------------
 
 /*:
+ * @target MV MZ
  * @plugindesc 一点物ショッププラグイン
  * @author なぴぃ
  * 
@@ -28,6 +30,8 @@
  * 
  * 在庫を復活させたい場合は以下のコマンドを入力します。
  * 　　限定ショップ 全リセット
+ * 
+ * MZの場合はプラグインコマンドの説明に従ってください。
  * 
  * 
  * ●ショップ毎に在庫リセット
@@ -48,7 +52,29 @@
  * https://napiiey.github.io/plugins/license.html
  * 
  * 
+ * @command mzLimitedShopOpen
+ * @text 限定ショップ オープン
+ * @desc [ショップの処理]の前にこのコマンドを入れる事で[ショップの処理]が在庫数1個のショップになります。
+ *
+ * @arg shopName
+ * @text ショップ名
+ * @desc 個別リセット用のショップ名を設定します。個別リセットを使わない場合は空欄で構いません。
+ * @type string
+ * @default 
  * 
+ * @command mzLimitedShopAllReset
+ * @text 限定ショップ 全リセット
+ * @desc 全てのショップの在庫を復活させます。
+ * 
+ * @command mzLimitedShopReset
+ * @text 限定ショップ リセット
+ * @desc 特定のショップの在庫を復活させます。
+ *
+ * @arg shopName
+ * @text ショップ名
+ * @desc リセットするショップ名を設定します。
+ * @type string
+ * @default 
  */
 
 var NAPI = NAPI||{};
@@ -64,7 +90,7 @@ NAPI.lsStockList={};
 let mapId=0;
 let eventId=0;
 let shopName="";
-
+const pluginName = "NAPI_LimitedOneShop";
 
 const _Game_Interpreter_prototype_pluginCommand = Game_Interpreter.prototype.pluginCommand;
 Game_Interpreter.prototype.pluginCommand = function(command, args) {
@@ -76,26 +102,49 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
     }
 };
 
+if(Utils.RPGMAKER_NAME==="MZ"){
+    PluginManager.registerCommand(pluginName, "mzLimitedShopOpen", args => {
+        mapId=this._mapId;
+        eventId=this._eventId;
+        shopName = "shop"+(mapId*1000+eventId);
+        if(args.shopName){
+            shopName = args.shopName;
+        }
+        NAPI.lsReady=true;
+    });
+    PluginManager.registerCommand(pluginName, "mzLimitedShopAllReset", args => {
+        allReset();
+    });
+    PluginManager.registerCommand(pluginName, "mzLimitedShopReset", args => {
+        reset(args.shopName);
+    });
+};
+
 NAPI.LimitedShop=function(argsArray){
-    shopName="shop"+(mapId*1000+eventId);
     let rawArgs=argsArray;
     const pluginArgs=rawArgs.map(e=>e.split(":"));
     pluginArgs.forEach(e=>{
         if(e[0].toLowerCase()==="max"||e[0]==="最大"){NAPI.lsMax=Number(e[1]);};
-        if(e[0].toLowerCase()==="shopName"||e[0]==="ショップ名"){mode=e[1];};
-        if(e[0].toLowerCase()==="open"||e[0]==="オープン"){NAPI.lsReady=true;};
-        if(e[0].toLowerCase()==="reset"||e[0]==="リセット"){
-            const shop=e[1];
-            NAPI.lsStockList[shop]=NAPI.lsStockList[shop].map(e=>1);
+        if(e[0].toLowerCase()==="open"||e[0]==="オープン"){
+            shopName="shop"+(mapId*1000+eventId);
+            NAPI.lsReady=true;
         };
-        if(e[0].toLowerCase()==="allreset"||e[0]==="全リセット"){
-            for(let key in NAPI.lsStockList){
-                NAPI.lsStockList[key]=NAPI.lsStockList[key].map(e=>1);
-            };
-        };
+        if(e[0].toLowerCase()==="shopname"||e[0]==="ショップ名"){shopName=e[1];};
+        if(e[0].toLowerCase()==="reset"||e[0]==="リセット"){reset(e[1]);};
+        if(e[0].toLowerCase()==="allreset"||e[0]==="全リセット"){allReset();};
     });
 };
 
+const reset = function(shop){
+    if(!NAPI.lsStockList.hasOwnProperty(shop)){return;};
+    NAPI.lsStockList[shop] = NAPI.lsStockList[shop].map(e2=>1);
+};
+
+const allReset = function(){
+    for(let key in NAPI.lsStockList){
+        NAPI.lsStockList[key]=NAPI.lsStockList[key].map(e2=>1);
+    };
+};
 
 Window_ShopBuy.prototype.isCurrentItemEnabled = function() {
     return this.isEnabled(this._data[this.index()],this.index());
@@ -114,20 +163,39 @@ Window_ShopBuy.prototype.drawItem = function(index) {
         if(!NAPI.lsStockList[shopName]){
             NAPI.lsStockList[shopName]=this._shopGoods.map(e=>NAPI.lsMax);
         };
-        var item = this._data[index];
-        var rect = this.itemRect(index);
-        var priceWidth = 96;
-        rect.width -= this.textPadding();
-        this.changePaintOpacity(this.isEnabled(item,index)&&NAPI.lsStockList[shopName][index]>=1);
-        this.drawItemName(item, rect.x, rect.y, rect.width - priceWidth);
-        if(NAPI.lsStockList[shopName][index]>=1){
-            this.drawText(this.price(item), rect.x + rect.width - priceWidth,
-                        rect.y, priceWidth, 'right');
-        }else{
-            this.drawText("売切れ", rect.x + rect.width - priceWidth,
-                        rect.y, priceWidth, 'right');
+        let item,price,rect,priceWidth,priceX,nameWidth;
+        if(Utils.RPGMAKER_NAME==="MV"){
+            item = this._data[index];
+            rect = this.itemRect(index);
+            priceWidth = 96;
+            rect.width -= this.textPadding();
+            this.changePaintOpacity(this.isEnabled(item,index)&&NAPI.lsStockList[shopName][index]>=1);
+            this.drawItemName(item, rect.x, rect.y, rect.width - priceWidth);
+            if(NAPI.lsStockList[shopName][index]>=1){
+                this.drawText(this.price(item), rect.x + rect.width - priceWidth,
+                            rect.y, priceWidth, 'right');
+            }else{
+                this.drawText("売切れ", rect.x + rect.width - priceWidth,
+                            rect.y, priceWidth, 'right');
+            }
+            this.changePaintOpacity(true);
         }
-        this.changePaintOpacity(true);
+        if(Utils.RPGMAKER_NAME==="MZ"){
+            item = this.itemAt(index);
+            price = this.price(item);
+            rect = this.itemLineRect(index);
+            priceWidth = this.priceWidth();
+            priceX = rect.x + rect.width - priceWidth;
+            nameWidth = rect.width - priceWidth;
+            this.changePaintOpacity(this.isEnabled(item,index)&&NAPI.lsStockList[shopName][index]>=1);
+            this.drawItemName(item, rect.x, rect.y, nameWidth);
+            if(NAPI.lsStockList[shopName][index]>=1){
+                this.drawText(price, priceX, rect.y, priceWidth, 'right');
+            }else{
+                this.drawText("売切れ", priceX, rect.y, priceWidth, 'right');
+            }
+            this.changePaintOpacity(true);
+        }
     }else{
         _Window_ShopBuy_prototype_drawItem.apply(this,arguments);
     };
@@ -136,8 +204,10 @@ Window_ShopBuy.prototype.drawItem = function(index) {
 const _Scene_Shop_prototype_doBuy=Scene_Shop.prototype.doBuy;
 Scene_Shop.prototype.doBuy = function(number) {
     _Scene_Shop_prototype_doBuy.apply(this,arguments);
-    const index=this._buyWindow.index();
-    NAPI.lsStockList[shopName][index]=NAPI.lsStockList[shopName][index]-number;
+    if(NAPI.lsReady){
+        const index=this._buyWindow.index();
+        NAPI.lsStockList[shopName][index]=NAPI.lsStockList[shopName][index]-number;
+    }
 };
 
 const _Scene_Shop_prototype_maxBuy=Scene_Shop.prototype.maxBuy;
