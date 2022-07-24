@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.1.1 2022/07/24 ショップ在庫がセーブデータに反映されていなかった不具合を修正
 // 1.1.0 2022/07/17 MZに対応・その他バグを修正
 // 1.0.1 2022/01/08 通常ショップを開いた時にエラーが起きる場合がある不具合を修正
 // 1.0.0 2021/12/17 公開
@@ -85,7 +86,6 @@ var NAPI = NAPI||{};
 
 NAPI.lsReady=false;
 NAPI.lsMax=1;
-NAPI.lsStockList={};
 
 let mapId=0;
 let eventId=0;
@@ -98,6 +98,7 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
     if(command==="LimitedShop"||command==="限定ショップ"){
         mapId=this._mapId;
         eventId=this._eventId;
+        if(!$gameSystem._napiLsStockList){$gameSystem._napiLsStockList = {};};
         NAPI.LimitedShop(args);
     }
 };
@@ -106,6 +107,7 @@ if(Utils.RPGMAKER_NAME==="MZ"){
     PluginManager.registerCommand(pluginName, "mzLimitedShopOpen", args => {
         mapId=this._mapId;
         eventId=this._eventId;
+        if(!$gameSystem._napiLsStockList){$gameSystem._napiLsStockList = {};};
         shopName = "shop"+(mapId*1000+eventId);
         if(args.shopName){
             shopName = args.shopName;
@@ -136,13 +138,13 @@ NAPI.LimitedShop=function(argsArray){
 };
 
 const reset = function(shop){
-    if(!NAPI.lsStockList.hasOwnProperty(shop)){return;};
-    NAPI.lsStockList[shop] = NAPI.lsStockList[shop].map(e2=>1);
+    if(!$gameSystem._napiLsStockList.hasOwnProperty(shop)){return;};
+    $gameSystem._napiLsStockList[shop] = $gameSystem._napiLsStockList[shop].map(e2=>1);
 };
 
 const allReset = function(){
-    for(let key in NAPI.lsStockList){
-        NAPI.lsStockList[key]=NAPI.lsStockList[key].map(e2=>1);
+    for(let key in $gameSystem._napiLsStockList){
+        $gameSystem._napiLsStockList[key]=$gameSystem._napiLsStockList[key].map(e2=>1);
     };
 };
 
@@ -153,15 +155,15 @@ Window_ShopBuy.prototype.isCurrentItemEnabled = function() {
 const _Window_ShopBuy_prototype_isEnabled=Window_ShopBuy.prototype.isEnabled;
 Window_ShopBuy.prototype.isEnabled = function(item,index) {
     let result=_Window_ShopBuy_prototype_isEnabled.apply(this,arguments);
-    if(shopName!==""&&NAPI.lsStockList[shopName][index]<=0){result=false};
+    if(shopName!==""&&$gameSystem._napiLsStockList[shopName][index]<=0){result=false};
     return result;
 };
 
 const _Window_ShopBuy_prototype_drawItem=Window_ShopBuy.prototype.drawItem;
 Window_ShopBuy.prototype.drawItem = function(index) {
     if(NAPI.lsReady){
-        if(!NAPI.lsStockList[shopName]){
-            NAPI.lsStockList[shopName]=this._shopGoods.map(e=>NAPI.lsMax);
+        if(!$gameSystem._napiLsStockList[shopName]){
+            $gameSystem._napiLsStockList[shopName]=this._shopGoods.map(e=>NAPI.lsMax);
         };
         let item,price,rect,priceWidth,priceX,nameWidth;
         if(Utils.RPGMAKER_NAME==="MV"){
@@ -169,9 +171,9 @@ Window_ShopBuy.prototype.drawItem = function(index) {
             rect = this.itemRect(index);
             priceWidth = 96;
             rect.width -= this.textPadding();
-            this.changePaintOpacity(this.isEnabled(item,index)&&NAPI.lsStockList[shopName][index]>=1);
+            this.changePaintOpacity(this.isEnabled(item,index)&&$gameSystem._napiLsStockList[shopName][index]>=1);
             this.drawItemName(item, rect.x, rect.y, rect.width - priceWidth);
-            if(NAPI.lsStockList[shopName][index]>=1){
+            if($gameSystem._napiLsStockList[shopName][index]>=1){
                 this.drawText(this.price(item), rect.x + rect.width - priceWidth,
                             rect.y, priceWidth, 'right');
             }else{
@@ -187,9 +189,9 @@ Window_ShopBuy.prototype.drawItem = function(index) {
             priceWidth = this.priceWidth();
             priceX = rect.x + rect.width - priceWidth;
             nameWidth = rect.width - priceWidth;
-            this.changePaintOpacity(this.isEnabled(item,index)&&NAPI.lsStockList[shopName][index]>=1);
+            this.changePaintOpacity(this.isEnabled(item,index)&&$gameSystem._napiLsStockList[shopName][index]>=1);
             this.drawItemName(item, rect.x, rect.y, nameWidth);
-            if(NAPI.lsStockList[shopName][index]>=1){
+            if($gameSystem._napiLsStockList[shopName][index]>=1){
                 this.drawText(price, priceX, rect.y, priceWidth, 'right');
             }else{
                 this.drawText("売切れ", priceX, rect.y, priceWidth, 'right');
@@ -206,7 +208,7 @@ Scene_Shop.prototype.doBuy = function(number) {
     _Scene_Shop_prototype_doBuy.apply(this,arguments);
     if(NAPI.lsReady){
         const index=this._buyWindow.index();
-        NAPI.lsStockList[shopName][index]=NAPI.lsStockList[shopName][index]-number;
+        $gameSystem._napiLsStockList[shopName][index]=$gameSystem._napiLsStockList[shopName][index]-number;
     }
 };
 
@@ -225,6 +227,7 @@ Scene_Shop.prototype.popScene = function() {
     NAPI.lsReady=false;
     _Scene_Shop_prototype_popScene.apply(this,arguments);
 };
+
 
 
 })();
