@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.1.2 2022/07/25 MZでショップ名を空欄にした際在庫が共有されてしまう不具合を修正
 // 1.1.1 2022/07/24 ショップ在庫がセーブデータに反映されていなかった不具合を修正
 // 1.1.0 2022/07/17 MZに対応・その他バグを修正
 // 1.0.1 2022/01/08 通常ショップを開いた時にエラーが起きる場合がある不具合を修正
@@ -105,8 +106,6 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
 
 if(Utils.RPGMAKER_NAME==="MZ"){
     PluginManager.registerCommand(pluginName, "mzLimitedShopOpen", args => {
-        mapId=this._mapId;
-        eventId=this._eventId;
         if(!$gameSystem._napiLsStockList){$gameSystem._napiLsStockList = {};};
         shopName = "shop"+(mapId*1000+eventId);
         if(args.shopName){
@@ -228,6 +227,18 @@ Scene_Shop.prototype.popScene = function() {
     _Scene_Shop_prototype_popScene.apply(this,arguments);
 };
 
+if(Utils.RPGMAKER_NAME==="MZ"){
+    const _Game_Interpreter_prototype_command357=Game_Interpreter.prototype.command357;
+    Game_Interpreter.prototype.command357 = function(params) {
+        const commandPluginName = Utils.extractFileName(params[0]);
+        if(pluginName === commandPluginName){
+            mapId=this._mapId;
+            eventId=this._eventId;
+        }
+        const result = _Game_Interpreter_prototype_command357.apply(this,arguments);
+        return result;
+    };
+}
 
 
 })();
