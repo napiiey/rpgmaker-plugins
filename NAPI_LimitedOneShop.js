@@ -6,6 +6,7 @@
 // https://opensource.org/licenses/mit-license.php
 //-----------------------------------------------------------------------------
 // version
+// 1.1.3 2022/08/01 限定ショップ利用後通常ショップで購入できなくなる不具合を修正
 // 1.1.2 2022/07/25 MZでショップ名を空欄にした際在庫が共有されてしまう不具合を修正
 // 1.1.1 2022/07/24 ショップ在庫がセーブデータに反映されていなかった不具合を修正
 // 1.1.0 2022/07/17 MZに対応・その他バグを修正
@@ -160,7 +161,7 @@ Window_ShopBuy.prototype.isCurrentItemEnabled = function() {
 const _Window_ShopBuy_prototype_isEnabled=Window_ShopBuy.prototype.isEnabled;
 Window_ShopBuy.prototype.isEnabled = function(item,index) {
     let result=_Window_ShopBuy_prototype_isEnabled.apply(this,arguments);
-    if(shopName!==""&&$gameSystem._napiLsStockList[shopName][index]<=0){result=false};
+    if(NAPI.lsReady&&shopName!==""&&$gameSystem._napiLsStockList[shopName][index]<=0){result=false};
     return result;
 };
 
@@ -228,7 +229,7 @@ Scene_Shop.prototype.maxBuy = function() {
 };
 
 const _Scene_Shop_prototype_popScene=Scene_Shop.prototype.popScene;
-Scene_Shop.prototype.popScene = function() {
+Scene_Shop.prototype.popScene = function() {console.log("pop");
     NAPI.lsReady=false;
     _Scene_Shop_prototype_popScene.apply(this,arguments);
 };
