@@ -229,7 +229,7 @@ Scene_Shop.prototype.maxBuy = function() {
 };
 
 const _Scene_Shop_prototype_popScene=Scene_Shop.prototype.popScene;
-Scene_Shop.prototype.popScene = function() {console.log("pop");
+Scene_Shop.prototype.popScene = function() {
     NAPI.lsReady=false;
     _Scene_Shop_prototype_popScene.apply(this,arguments);
 };
